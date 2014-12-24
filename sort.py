@@ -1,4 +1,7 @@
 #!/usr/bin/python
+"""
+    Bogo Sort is best sort.
+"""
 
 import random
 import time
