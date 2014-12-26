@@ -20,9 +20,7 @@ def check_sort(lst):
 	return True
 
 def BogoSort(unsorted):
-	""" Preform a Bogo Sort on the given list and return a sorted list. """
-	print('Starting sort')
-	
+	""" Preform a Bogo Sort on the given list and return a sorted list. """	
 	## Don't touch the original list.
 	list_unsorted = copy.deepcopy(unsorted)
 	
@@ -34,7 +32,9 @@ def BogoSort(unsorted):
 	
 	list_sorted = []
 	sort_done = False
+	tries = 0
 	while not sort_done:
+		tries += 1
 		## Clean the unsorted list, and recopy it.
 		del list_unsorted[:]
 		list_unsorted = copy.deepcopy(unsorted)
@@ -65,16 +65,80 @@ def BogoSort(unsorted):
 	
 	## Stop the timer.
 	time_end = time.time()
-	print('Sort finished.  Sorting {l} elements took {s} seconds.'.format(l=len(list_sorted), s=(time_end - time_start)))
+	#print('Sort finished.  Sorting {l} elements took {s} seconds.'.format(l=len(list_sorted), s=(time_end - time_start)))
 	
-	return list_sorted
+	return (list_sorted, tries)
 
-## Construct an unsorted list of a given length.
-unsorted_list = []
-for i in range(8):
-	unsorted_list.append(random.randint(1, 100))
-
-## Do the thing.
-print('List before sort: {l}'.format(l=unsorted_list))
-sorted_list = BogoSort(unsorted_list)
-print('List after sort: {l}'.format(l=sorted_list))
+def TimeSort(length, itterations):
+	""" Gather statistics on running BogoSort for different list lengths. """
+	stats = {
+		'itterations':	itterations,
+		'longest':		0,
+		'shortest':		None,
+		'average':		0,
+		'fewest':		None,	## Fewest tries
+		'most':			0,		## Most tries
+		'all_times':	[]
+	}
+	
+	print('Starting TimeSort() with length of [{l}] for [{i}] itterations'.format(l=length, i=itterations))
+	for i in range(itterations):
+		print('Itteration {n}/{t}'.format(n=(i+1), t=itterations))
+		## Construct an unsorted list of a given length.
+		unsorted_list = []
+		for i in range(length):
+			## Do the thing
+			unsorted_list.append(random.randint(1, 1000))
+		
+		start_time = time.time()
+		(sorted_list, tries) = BogoSort(unsorted_list)
+		total_time = time.time() - start_time
+		
+		stats['all_times'].append({'time': total_time, 'tries': tries})
+		
+		if stats['longest'] < total_time:
+			stats['longest'] = total_time
+		
+		if stats['shortest'] is None:
+			stats['shortest'] = total_time
+		elif stats['shortest'] > total_time:
+			stats['shortest'] = total_time
+		
+		if stats['fewest'] is None:
+			stats['fewest'] = tries
+		elif stats['fewest'] > tries:
+			stats['fewest'] = tries
+		
+		if stats['most'] < tries:
+			stats['most'] = tries
+		
+	return stats
+		
+if __name__ == '__main__':
+	## Do the thing.
+	stats = TimeSort(8, 20)
+	total_time = 0
+	total_tries = 0
+	for data in stats['all_times']:
+		total_time += data['time']
+		total_tries += data['tries']
+	
+	avg_time = total_time / (stats['itterations'] * 1.0)
+	avg_tries = total_tries / (stats['itterations'] * 1.0)
+		
+	print(
+		"====\nTotal Time: {t:.2}\nItterations: {i}\nLongest: {l:.2}\nShortest: {s:.2}\nAverage: {a:.2}\nTotal Tries: {ttry:,}\nAverage Tries: {atry:,}\nMost: {m:,}\nFewest: {f:,}".format(
+			t = total_time,
+			i = stats['itterations'],
+			l = stats['longest'],
+			s = stats['shortest'],
+			a = avg_time,
+			ttry = total_tries,
+			atry = avg_tries,
+			m = stats['most'],
+			f = stats['fewest']
+		)
+	)
+	print('== Individual Itterations ==')
+	for data in stats['all_times']:
+		print("{n:,} tries in {t:.2} seconds".format(n=data['tries'], t=data['time']))
