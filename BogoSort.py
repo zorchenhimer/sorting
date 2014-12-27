@@ -25,7 +25,7 @@ def BogoSort(unsorted):
 	list_unsorted = copy.deepcopy(unsorted)
 	
 	## Number of itterations until we give up.
-	itt = 1000000
+	itt = 10000000
 	
 	## Start the timer.
 	time_start = time.time()
@@ -83,7 +83,8 @@ def TimeSort(length, itterations):
 	
 	print('Starting TimeSort() with length of [{l}] for [{i}] itterations'.format(l=length, i=itterations))
 	for i in range(itterations):
-		print('Itteration {n}/{t}'.format(n=(i+1), t=itterations))
+		if ((i + 1) % 10) == 0:
+			print('Itteration {n}/{t}'.format(n=(i+1), t=itterations))
 		## Construct an unsorted list of a given length.
 		unsorted_list = []
 		for i in range(length):
@@ -116,29 +117,37 @@ def TimeSort(length, itterations):
 		
 if __name__ == '__main__':
 	## Do the thing.
-	stats = TimeSort(8, 20)
-	total_time = 0
-	total_tries = 0
-	for data in stats['all_times']:
-		total_time += data['time']
-		total_tries += data['tries']
-	
-	avg_time = total_time / (stats['itterations'] * 1.0)
-	avg_tries = total_tries / (stats['itterations'] * 1.0)
+	for i in range(2, 11):
+		stats = TimeSort(i, 400)
+		total_time = 0
+		total_tries = 0
+		for data in stats['all_times']:
+			total_time += data['time']
+			total_tries += data['tries']
 		
-	print(
-		"====\nTotal Time: {t:.2}\nItterations: {i}\nLongest: {l:.2}\nShortest: {s:.2}\nAverage: {a:.2}\nTotal Tries: {ttry:,}\nAverage Tries: {atry:,}\nMost: {m:,}\nFewest: {f:,}".format(
-			t = total_time,
-			i = stats['itterations'],
-			l = stats['longest'],
-			s = stats['shortest'],
-			a = avg_time,
-			ttry = total_tries,
-			atry = avg_tries,
-			m = stats['most'],
-			f = stats['fewest']
+		avg_time = total_time / (stats['itterations'] * 1.0)
+		avg_tries = total_tries / (stats['itterations'] * 1.0)
+		
+		fewest = stats['fewest']
+		if fewest is None:
+			fewest = 0
+		
+		print(
+			"====\nTotal Time: {t}\nItterations: {i}\nLongest: {l}\nShortest: {s}\nAverage: {a}\nTotal Tries: {ttry}\nAverage Tries: {atry}\nMost: {m}\nFewest: {f}".format(
+				t = total_time,
+				i = stats['itterations'],
+				l = stats['longest'],
+				s = stats['shortest'],
+				a = avg_time,
+				ttry = total_tries,
+				atry = avg_tries,
+				m = stats['most'],
+				f = stats['fewest']
+			)
 		)
-	)
-	print('== Individual Itterations ==')
-	for data in stats['all_times']:
-		print("{n:,} tries in {t:.2} seconds".format(n=data['tries'], t=data['time']))
+		f = open('data_{l}.csv'.format(l=i), 'w')
+		#print('== Individual Itterations ==')
+		for data in stats['all_times']:
+			#print("{n:,} tries in {t:.2} seconds".format(n=data['tries'], t=data['time']))
+			f.write("{n},{t}\n".format(n=data['tries'], t=data['time']))
+		f.close()
